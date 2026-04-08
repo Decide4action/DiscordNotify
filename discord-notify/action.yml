@@ -26,7 +26,7 @@ runs:
   using: composite
   steps:
     - name: Send Discord notification
-      shell: pwsh
+      shell: powershell
       env:
         INPUT_WEBHOOK_URL: ${{ inputs.webhook_url }}
         INPUT_STATUS: ${{ inputs.status }}
