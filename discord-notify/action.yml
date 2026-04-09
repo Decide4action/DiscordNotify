@@ -17,6 +17,18 @@ inputs:
     description: Optional extra message appended to the notification.
     required: false
     default: ""
+  version:
+    description: Version number to include in the Discord notification.
+    required: false
+    default: ""
+  sharepoint_link:
+    description: SharePoint URL to include in the Discord notification.
+    required: false
+    default: ""
+  message_only:
+    description: Deprecated. The action now always sends the standardized version message.
+    required: false
+    default: "false"
   username:
     description: Optional webhook username override.
     required: false

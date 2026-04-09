@@ -4,7 +4,7 @@ Reusable GitHub Actions for the organisation.
 
 ## `discord-notify`
 
-This composite action sends a Discord webhook message for the current job.
+This action sends a Discord webhook message in the format `new version <version> out: <sharepoint link>`.
 
 ### Org Secret
 
@@ -21,9 +21,11 @@ Add this as the last step in any job you want to monitor:
   with:
     webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
     status: ${{ job.status }}
+    version: 4.2.0
+    sharepoint_link: https://contoso.sharepoint.com/sites/releases/Shared%20Documents/Installer/4.2.0
 ```
 
-### Optional Inputs
+### Backward-Compatible Usage
 
 ```yaml
 - name: Discord notification
@@ -33,11 +35,12 @@ Add this as the last step in any job you want to monitor:
     webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
     status: ${{ job.status }}
     title: Build And Upload Main Installer
-    message: Version 4.2.0 uploaded to SharePoint.
+    message: Version 4.2.0 uploaded to SharePoint: https://contoso.sharepoint.com/sites/releases/Shared%20Documents/Installer/4.2.0
 ```
 
 ### Notes
 
-- The action uses the current GitHub Actions context for repository, workflow, branch, actor, event, and run URL.
+- Prefer passing `version` and `sharepoint_link` explicitly.
+- If those inputs are omitted, the action will try to parse a version number and URL from `message` or `title`.
 - The webhook URL is the only required secret.
 - This is intended for workflow notifications, not interactive bot commands.
