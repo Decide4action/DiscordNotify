@@ -82,9 +82,16 @@ async function main() {
   const status = getInput('status').toLowerCase();
   const title = getInput('title') || (process.env.GITHUB_WORKFLOW || '').trim();
   const message = getInput('message');
+  const messageOnly = isTrue(getInput('message_only', 'false'));
   const version = getInput('version');
   const sharepointLink = getInput('sharepoint_link');
   const username = getInput('username', 'GitHub Actions');
+  const repository = (process.env.GITHUB_REPOSITORY || '').trim();
+  const branch = ((process.env.GITHUB_REF_NAME || '').trim()) || 'main';
+  const actor = (process.env.GITHUB_ACTOR || '').trim();
+  const eventName = (process.env.GITHUB_EVENT_NAME || '').trim();
+  const runId = (process.env.GITHUB_RUN_ID || '').trim();
+  const serverUrl = (process.env.GITHUB_SERVER_URL || 'https://github.com').trim();
 
   if (!webhookUrl) {
     throw new Error('Missing required input: webhook_url');
@@ -102,16 +109,59 @@ async function main() {
     extractUrl(message, title)
   );
 
-  if (!resolvedVersion) {
-    throw new Error('Missing version. Provide input: version, or include a parseable version in title/message.');
+  if (resolvedVersion && resolvedSharePointLink) {
+    const payload = {
+      username,
+      content: `new version ${resolvedVersion} out: ${resolvedSharePointLink}`,
+    };
+
+    await postJson(webhookUrl, payload);
+    process.stdout.write('Discord notification sent.\n');
+    return;
   }
-  if (!resolvedSharePointLink) {
-    throw new Error('Missing SharePoint link. Provide input: sharepoint_link, or include a URL in title/message.');
+
+  if (messageOnly) {
+    if (!message) {
+      throw new Error('Missing required input when message_only=true: message');
+    }
+
+    await postJson(webhookUrl, {
+      username,
+      content: message,
+    });
+    process.stdout.write('Discord notification sent.\n');
+    return;
+  }
+
+  const colors = {
+    success: 3066993,
+    failure: 15158332,
+    cancelled: 9807270,
+  };
+
+  const runUrl = repository && runId ? `${serverUrl}/${repository}/actions/runs/${runId}` : serverUrl;
+  const lines = [
+    `Status: ${status}`,
+    `Repository: ${repository}`,
+    `Branch: ${branch}`,
+    `Actor: ${actor}`,
+    `Event: ${eventName}`,
+  ];
+
+  if (message) {
+    lines.push('', message);
   }
 
   const payload = {
     username,
-    content: `new version ${resolvedVersion} out: ${resolvedSharePointLink}`,
+    embeds: [
+      {
+        title,
+        description: lines.join('\n'),
+        color: colors[status] || 3447003,
+        url: runUrl,
+      },
+    ],
   };
 
   await postJson(webhookUrl, payload);
