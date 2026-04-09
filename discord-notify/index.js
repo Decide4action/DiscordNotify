@@ -96,9 +96,6 @@ async function main() {
   if (!webhookUrl) {
     throw new Error('Missing required input: webhook_url');
   }
-  if (!status) {
-    throw new Error('Missing required input: status');
-  }
 
   const resolvedVersion = firstNonEmpty(
     version,
@@ -141,12 +138,15 @@ async function main() {
 
   const runUrl = repository && runId ? `${serverUrl}/${repository}/actions/runs/${runId}` : serverUrl;
   const lines = [
-    `Status: ${status}`,
     `Repository: ${repository}`,
     `Branch: ${branch}`,
     `Actor: ${actor}`,
     `Event: ${eventName}`,
   ];
+
+  if (status) {
+    lines.unshift(`Status: ${status}`);
+  }
 
   if (message) {
     lines.push('', message);

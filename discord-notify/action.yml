@@ -7,8 +7,9 @@ inputs:
     description: Discord webhook URL.
     required: true
   status:
-    description: Job status passed by the caller workflow.
-    required: true
+    description: Optional job status passed by the caller workflow.
+    required: false
+    default: ""
   title:
     description: Optional title override.
     required: false
